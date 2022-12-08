@@ -57,7 +57,7 @@ if __name__ == "__main__":
             filters=[{
                 'col': 'route_id',
                 'value': x['route_id'],
-                'comparison': 'equals'
+                'comparison': 'equals',
             }]
         )[0]
 
@@ -65,6 +65,16 @@ if __name__ == "__main__":
 
         x['route'] = route_details['route_short_name']
         
+        trip_details = get_context(
+            asset='trips',
+            filters=[{
+                'col': 'trip_id',
+                'value': x['trip_id'],
+                'comparison': 'equals',
+            }]
+        )[0]
+
+        x['headsign'] = trip_details['trip_headsign']
 
         stop_details = get_context(
             asset='stops',
@@ -81,4 +91,4 @@ if __name__ == "__main__":
     
 
     for x in sorted(interested, key=lambda x: x['route_id']):
-        print(f"{x['route'], x['stop_name'], x['arrival_time'], x['arrival_delay']}")
+        print(f"{x['route'], x['headsign'], x['stop_name'], x['arrival_time'], x['arrival_delay']}")

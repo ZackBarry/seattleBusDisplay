@@ -24,3 +24,12 @@ arrival_delay is in seconds
 
 arrival_time takes into account arrival_delay
 
+---
+
+the `trip_headsign` and `direction_id` fields from `trips.txt` can be used together to assign a name for travel in each direction
+```
+route_id,service_id,trip_id,trip_headsign,trip_short_name,direction_id,block_id,shape_id,peak_flag,fare_id
+
+100193,83193,535507942,"Seattle Center Fremont","LOCAL",0,6617997,31032002,0,101
+100193,17345,535513532,"Seattle Childrens Hospital U-District Station","LOCAL",1,6618149,40032001,0,101
+```
