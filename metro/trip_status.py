@@ -33,6 +33,6 @@ def get_stop_statuses():
                 "arrival_time":  int(stop.get("arrival", dict()).get("time", -1)),
                 "arrival_delay": int(stop.get("arrival", dict()).get("delay", -1)),
                 "stop_status":   stop["schedule_relationship"],
-            })
+            })        
     
     return stop_statuses

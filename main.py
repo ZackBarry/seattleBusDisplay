@@ -1,94 +1,59 @@
-from context import download_context, get_context
-from trip_status import get_stop_statuses
-from util import filter_table
+import logging
+import threading
+import time
 
-from datetime import datetime
+from data import Data
+from renderers.main import MainRenderer
+
+logger = logging.getLogger("busses")
+
+try:
+    from rgbmatrix import RGBMatrix, __version__
+    emulated = False
+except ImportError:
+    from RGBMatrixEmulator import RGBMatrix, version
+    emulated = True
 
 
-STOPS_OF_INTEREST = [
-    26400, # "N 40th St & Wallingford Ave N" (Westbound)
-    26965, # "N 40th St & Wallingford Ave N" (Eastbound)
-    17310, # "N 45th St & Wallingford Ave N" (Westbound)
-    17410, # "N 45th St & Wallingford Ave N" (Eastbound)
-    7360,  # "Stone Way N & N 40th St" (Southbound)
-]
+def main(matrix):
+    # Print some basic info on startup
+    logger.info("(%sx%s)", matrix.width, matrix.height)
 
-ROUTES_OF_INTEREST = [
-    100224, # 44
-    100252, # 62
-    100184, # 31
-    100193, # 32
-]
+    if emulated:
+        logger.debug("rgbmatrix not installed, falling back to emulator!")
+        logger.debug("Using RGBMatrixEmulator version %s", version.__version__)
+    else:
+        logger.debug("Using rgbmatrix version %s", __version__)
+
+    # Create a new data object to manage the MLB data
+    # This will fetch initial data from MLB
+    data = Data(config)
+
+    # create render thread
+    render = threading.Thread(target=__render_main, args=[matrix, data], name="render_thread", daemon=True)
+    time.sleep(1)
+    render.start()
+
+    __refresh_busses()
+
+
+def __refresh_busses(render_thread, data):
+    logger.debug("Main has selected the busses to refresh")
+    while render_thread.is_alive():
+        time.sleep(30)
+        data.refresh_busses()
+
+
+def __render_main(matrix, data):
+    MainRenderer(matrix, data).render()
+
 
 if __name__ == "__main__":
-    download_context()
-
-    stop_statuses = get_stop_statuses()
-
-    interested = filter_table(
-        table=stop_statuses, 
-        col='stop_id', 
-        value=STOPS_OF_INTEREST, 
-        comparison='is_one_of',
-    )
-
-    interested = filter_table(
-        table=interested,
-        col='route_id',
-        value=ROUTES_OF_INTEREST,
-        comparison='is_one_of',
-    )
-
-    interested = filter_table(
-        table = interested,
-        col='trip_status',
-        value='SCHEDULED',
-    )
-
-    interested = filter_table(
-        table = interested,
-        col='stop_status',
-        value='SCHEDULED',
-    )
-
-    for x in interested:
-        route_details = get_context(
-            asset='routes',
-            filters=[{
-                'col': 'route_id',
-                'value': x['route_id'],
-                'comparison': 'equals',
-            }]
-        )[0]
-
-        x['route_name'] = route_details['route_desc']
-
-        x['route'] = route_details['route_short_name']
-        
-        trip_details = get_context(
-            asset='trips',
-            filters=[{
-                'col': 'trip_id',
-                'value': x['trip_id'],
-                'comparison': 'equals',
-            }]
-        )[0]
-
-        x['headsign'] = trip_details['trip_headsign']
-
-        stop_details = get_context(
-            asset='stops',
-            filters=[{
-                'col': 'stop_id',
-                'value': x['stop_id'],
-                'comparison': 'equals'
-            }]
-        )[0]
-
-        x["stop_name"] = stop_details["stop_name"]
-
-        x['arrival_time'] = datetime.fromtimestamp(x['arrival_time']).strftime('%H-%M-%S')
-    
-
-    for x in sorted(interested, key=lambda x: x['route_id']):
-        print(f"{x['route'], x['headsign'], x['stop_name'], x['arrival_time'], x['arrival_delay']}")
+    matrix = RGBMatrix()
+    try:
+        main(matrix)
+    except:
+        logger.exception("Untrapped error in main!")
+        sys.exit(1)
+    finally:
+        matrix.Clear()
