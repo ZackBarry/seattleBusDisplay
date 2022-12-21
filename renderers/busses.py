@@ -9,6 +9,9 @@ from data.standings import Division, League
 from utils import center_text_position
 
 
+def render_busses(canvas, data):
+    
+
 def render_standings(canvas, layout: Layout, colors: Color, division: Division, stat):
     league = division.name[:2]  # al or nl
     __fill_bg(canvas, colors, league)

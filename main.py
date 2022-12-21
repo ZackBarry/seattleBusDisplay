@@ -1,6 +1,7 @@
 import logging
 import threading
 import time
+import sys
 
 from data import Data
 from renderers.main import MainRenderer
@@ -15,8 +16,19 @@ except ImportError:
     emulated = True
 
 
+"""
+The data object has methods for saving the data
+
+The MainRenderer handles creating the matrix from Data
+    it does this by calling a render method, busses.render_busses
+
+The __render_xxx functions update Data every N seconds, which MainRenderer 
+   receives via reference
+
+"""
+
+
 def main(matrix):
-    # Print some basic info on startup
     logger.info("(%sx%s)", matrix.width, matrix.height)
 
     if emulated:
@@ -25,11 +37,8 @@ def main(matrix):
     else:
         logger.debug("Using rgbmatrix version %s", __version__)
 
-    # Create a new data object to manage the MLB data
-    # This will fetch initial data from MLB
-    data = Data(config)
+    data = Data()
 
-    # create render thread
     render = threading.Thread(target=__render_main, args=[matrix, data], name="render_thread", daemon=True)
     time.sleep(1)
     render.start()
@@ -46,8 +55,6 @@ def __refresh_busses(render_thread, data):
 
 def __render_main(matrix, data):
     MainRenderer(matrix, data).render()
-
-
 if __name__ == "__main__":
     matrix = RGBMatrix()
     try:
