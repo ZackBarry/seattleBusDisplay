@@ -47,6 +47,9 @@ sudo python run.py $BUS_ARGS
 # to schedule it - https://www.makeuseof.com/what-is-systemd-launch-programs-raspberry-pi/
 sudo mv seattle-bus-display.service /lib/systemd/system/seattle-bus-display.service
 sudo systemctl enable seattle-bus-display.service
+
+# to restart 
+sudo systemctl restart seattle-bus-display.service
 ```
 
 
