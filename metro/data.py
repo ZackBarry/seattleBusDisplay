@@ -92,7 +92,7 @@ class Data:
         status['arrival_epoch'] = status['arrival_time']
         status['arrival_time'] = datetime.fromtimestamp(status['arrival_epoch']).strftime('%H-%M-%S')
         status['direction'] = HEADSIGN_DIR[status['headsign']]
-        status['short_name'] = status['stop_name'] + status['direction']
+        status['short_name'] = status['route'] + status['direction']
 
         return status
     
@@ -118,7 +118,7 @@ class Data:
         self.stop_statuses = sorted(formatted, key=lambda x: x['arrival_time'])
 
 
-    def render_stop_status(x):
+    def render_stop_status(self, x):
         sec_to_arrival = int(x['arrival_epoch'] - datetime.now().timestamp())
 
         seconds = sec_to_arrival % 60
