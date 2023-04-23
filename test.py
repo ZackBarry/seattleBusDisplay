@@ -6,10 +6,8 @@ import time
 
 try:
     from rgbmatrix import graphics
-    from rgbmatrix.graphics import font
 except ImportError:
     from RGBMatrixEmulator import graphics
-    from RGBMatrixEmulator.graphics import font
 
 
 class RunText(SampleBase):
