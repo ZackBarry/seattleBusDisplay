@@ -92,16 +92,11 @@ class RunText(SampleBase):
                     elif status['status'] == 'ahead':
                         offscreen_canvas.SetPixel(self.matrix.width - 2, 10 * i + 1 + j, 0, 255, 0)
 
-            # sec_remaining = SWITCH_S - (time_passed_ms // MS_PER_S) % SWITCH_S - 1
-            # for i in range(sec_remaining):
-            #     offscreen_canvas.SetPixel(1 + i, 12, 0, 0, 255)
-
-            ms_remaining = time_passed_ms % (MS_PER_S * SWITCH_S)
-            points_possible = 14
-            MS_PER_POINT = (MS_PER_S * SWITCH_S) // 14
-            points = 14 - ms_remaining // MS_PER_POINT
-            for i in range(points - 1):
-                offscreen_canvas.SetPixel(1 + i, 12, 0, 0, 255)
+            sec_remaining = SWITCH_S - (time_passed_ms // MS_PER_S) % SWITCH_S - 1
+            for i in range(sec_remaining):
+                offscreen_canvas.SetPixel(1 + 3*i, 12, 0, 0, 255)
+                offscreen_canvas.SetPixel(1 + 3*i + 1, 12, 0, 0, 255)
+                offscreen_canvas.SetPixel(1 + 3*i + 2, 12, 0, 0, 255)
 
             time.sleep(0.05)
             time_passed_ms += 50
