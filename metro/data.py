@@ -87,10 +87,12 @@ class Data:
 
         status['route_name'] = route['route_desc']
         status['route'] = route['route_short_name']
-        status['headsign'] = trip['trip_headsign']
+        status['headsign'] = trip['trip_headsign'].strip()
         status['stop_name'] = stop['stop_name']
         status['arrival_epoch'] = status['arrival_time']
         status['arrival_time'] = datetime.fromtimestamp(status['arrival_epoch']).strftime('%H-%M-%S')
+        status['direction'] = HEADSIGN_DIR[status['headsign']]
+        status['short_name'] = status['stop_name'] + status['direction']
 
         return status
     
@@ -114,19 +116,9 @@ class Data:
         ]
 
         self.stop_statuses = sorted(formatted, key=lambda x: x['arrival_time'])
-    
-    def get_stop_status(self, index):
-        if index >= len(self.stop_statuses):
-            index = index % len(self.stop_statuses)
-        
-        x = self.stop_statuses[index]
 
-        headsign = x['headsign'].strip()
-        if headsign in HEADSIGN_DIR:
-            dir = HEADSIGN_DIR[headsign]
-        else:
-            dir = ' '
 
+    def render_stop_status(x):
         sec_to_arrival = int(x['arrival_epoch'] - datetime.now().timestamp())
 
         seconds = sec_to_arrival % 60
@@ -141,7 +133,7 @@ class Data:
         elif len(minutes) > 2:
             minutes = '99'
         
-        text = f"{x['route']}{dir} {minutes}:{seconds}"
+        text = f"{x['short_name']} {minutes}:{seconds}"
 
         if x['arrival_delay'] > 60:
             status = 'delayed'
@@ -154,3 +146,20 @@ class Data:
             'text': text,
             'status': status,
         }
+
+    def get_specific_stop_statuses(self, short_name):
+        statuses = filter_table(
+            table=self.stop_statuses,
+            col='short_name',
+            value=short_name,
+            comparison='equals'
+        )
+        return statuses
+
+    def get_stop_status(self, index):
+        if index >= len(self.stop_statuses):
+            index = index % len(self.stop_statuses)
+        
+        x = self.stop_statuses[index]
+
+        return self.render_stop_status(x)
