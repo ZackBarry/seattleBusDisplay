@@ -147,6 +147,7 @@ class Data:
         return {
             'text': text,
             'status': status,
+            'offset': int(round(abs(x['arrival_delay']) / 60, 0))
         }
 
     def render_stop_status(self, x):
@@ -179,8 +180,11 @@ class Data:
             status = 'on-time'
 
         return {
+            'route': x['short_name'],
+            'time': f'{minutes}:{seconds}',
             'text': text,
             'status': status,
+            'offset': int(round(abs(x['arrival_delay']) / 60, 0))
         }
 
     def get_bus_statuses(self, bus_names):
