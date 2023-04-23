@@ -69,7 +69,7 @@ class RunText(SampleBase):
                     offscreen_canvas, font, pos_eta, 10 + 10 * i, 
                     color, eta
                 )
-                for j in range(min(status['offset'], 10)):
+                for j in range(min(status['offset'], 9)):
                     if status['status'] == 'delayed':
                         offscreen_canvas.SetPixel(self.matrix.width - 1, 10 * i + 1 + j, 255, 0, 0)
                     elif status['status'] == 'ahead':
