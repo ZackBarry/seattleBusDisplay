@@ -6,10 +6,10 @@ from metro.util import filter_table, table_to_dict
 
 A = [
     26400, # "N 40th St & Wallingford Ave N" (Westbound)
-    26965, # "N 40th St & Wallingford Ave N" (Eastbound)
+    # 26965, # "N 40th St & Wallingford Ave N" (Eastbound)
     17310, # "N 45th St & Wallingford Ave N" (Westbound)
-    17410, # "N 45th St & Wallingford Ave N" (Eastbound)
-    7360,  # "Stone Way N & N 40th St" (Southbound)
+    # 17410, # "N 45th St & Wallingford Ave N" (Eastbound)
+    # 7360,  # "Stone Way N & N 40th St" (Southbound)
 ]
 
 B = [
