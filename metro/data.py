@@ -6,10 +6,10 @@ from metro.util import filter_table, table_to_dict
 
 A = [
     26400, # "N 40th St & Wallingford Ave N" (Westbound)
-    # 26965, # "N 40th St & Wallingford Ave N" (Eastbound)
+    26965, # "N 40th St & Wallingford Ave N" (Eastbound)
     17310, # "N 45th St & Wallingford Ave N" (Westbound)
-    # 17410, # "N 45th St & Wallingford Ave N" (Eastbound)
-    # 7360,  # "Stone Way N & N 40th St" (Southbound)
+    17410, # "N 45th St & Wallingford Ave N" (Eastbound)
+    7360,  # "Stone Way N & N 40th St" (Southbound)
 ]
 
 B = [
@@ -117,8 +117,44 @@ class Data:
 
         self.stop_statuses = sorted(formatted, key=lambda x: x['arrival_time'])
 
+    def render_stop_status_2(self, x):
+        """
+        text: 44N 04|05 status: late
+        4 minutes until arrival
+        5 minutes late
+        """
+        sec_to_arrival = int(x['arrival_epoch'] - datetime.now().timestamp())
+    
+        minutes = str(sec_to_arrival // 60)
+        if len(minutes) == 1:
+            minutes = '0' + minutes
+        elif len(minutes) > 2:
+            minutes = '99'
+
+        delay_minutes = str(int(round(abs(x['arrival_delay']) / 60, 0)))
+        if len(delay_minutes) == 1:
+            delay_minutes = '0' + delay_minutes
+        
+        text = f"{x['short_name']} {minutes}|{delay_minutes}"
+
+        if delay_minutes == '00':
+            status = 'on-time'
+        elif x['arrival_delay'] > 0:
+            status = 'delayed'
+        else:
+            status = 'ahead'
+
+        return {
+            'text': text,
+            'status': status,
+        }
 
     def render_stop_status(self, x):
+        """
+        text: 44N 04:23 status: late
+        4:23 until arrival
+        behind schedule
+        """
         sec_to_arrival = int(x['arrival_epoch'] - datetime.now().timestamp())
 
         seconds = sec_to_arrival % 60
@@ -147,14 +183,14 @@ class Data:
             'status': status,
         }
 
-    def get_specific_stop_statuses(self, short_name):
+    def get_bus_statuses(self, bus_names):
         statuses = filter_table(
             table=self.stop_statuses,
             col='short_name',
-            value=short_name,
-            comparison='equals'
+            value=bus_names,
+            comparison='is_one_of'
         )
-        return statuses
+        return [self.render_stop_status(x) for x in statuses]
 
     def get_stop_status(self, index):
         if index >= len(self.stop_statuses):
