@@ -59,7 +59,7 @@ class SampleBase(object):
         options.led_rgb_sequence = self.args.led_rgb_sequence
         options.pixel_mapper_config = self.args.led_pixel_mapper
         options.panel_type = self.args.led_panel_type
-        options.led_limit_refresh_hz = self.args.led_limit_refresh_hz
+        options.limit_refresh_rate_hz = self.args.led_limit_refresh_hz
 
 
         if self.args.led_show_refresh:
