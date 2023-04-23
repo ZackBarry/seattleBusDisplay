@@ -1,0 +1,3 @@
+[Desktop Entry]
+Name=Seattle Bus Display
+Exec=/usr/bin/python /home/zackbarry12/seattleBusDisplay/run.py $BUS_ARGS

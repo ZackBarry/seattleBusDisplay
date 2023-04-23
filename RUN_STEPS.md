@@ -37,7 +37,12 @@ sudo vi /boot/config.txt
 # comment out arm_boost=1
 sudo reboot
 
-sudo python run.py --led-gpio-mapping=adafruit-hat --led-cols=64 --led-rows=32 --led-slowdown-gpio=4 --led-limit-refresh-hz=60
+vi ~/.bashrc
+# insert the following
+BUS_ARGS="--led-gpio-mapping=adafruit-hat --led-cols=64 --led-rows=32 --led-slowdown-gpio=4 --led-limit-refresh-hz=60 --led-brightness=65"
+source ~/.bashrc
+
+sudo python run.py $BUS_ARGS
 ```
 
 
