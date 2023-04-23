@@ -21,3 +21,7 @@ def filter_table(table, col, value, comparison='equals'):
         return _filter_table(table, col, lambda x: x != value)
     elif comparison == 'is_one_of':
         return _filter_table(table, col, lambda x: x in value)
+
+
+def table_to_dict(table, primary_key):
+    return {row[primary_key]: row for row in table}

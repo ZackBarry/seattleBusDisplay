@@ -9,6 +9,7 @@ def download_trip_statuses():
 
     if resp.status_code != 200:
         print(f'Error: {resp.status_code}: {str(resp)}')
+        return []
     
     return resp.json()['entity']
 

@@ -3,7 +3,7 @@ import threading
 import time
 import sys
 
-from data import Data
+from metro.data import Data
 from renderers.main import MainRenderer
 
 logger = logging.getLogger("busses")
@@ -50,11 +50,12 @@ def __refresh_busses(render_thread, data):
     logger.debug("Main has selected the busses to refresh")
     while render_thread.is_alive():
         time.sleep(30)
-        data.refresh_busses()
+        data.update_stop_statuses()
 
 
 def __render_main(matrix, data):
     MainRenderer(matrix, data).render()
+
 if __name__ == "__main__":
     matrix = RGBMatrix()
     try:

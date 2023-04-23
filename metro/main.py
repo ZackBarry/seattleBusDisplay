@@ -40,7 +40,7 @@ if __name__ == "__main__":
     )
 
     interested = filter_table(
-        table = interested,
+        table=interested,
         col='trip_status',
         value='SCHEDULED',
     )
