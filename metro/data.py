@@ -169,6 +169,12 @@ class Data:
             minutes = '0' + minutes
         elif len(minutes) > 2:
             minutes = '99'
+
+        only_minutes = str(int(round(sec_to_arrival / 60, 0)))
+        if len(only_minutes) == 1:
+            only_minutes = '0' + only_minutes
+        elif len(only_minutes) > 2:
+            only_minutes = '99'
         
         text = f"{x['short_name']} {minutes}:{seconds}"
 
@@ -182,6 +188,7 @@ class Data:
         return {
             'route': x['short_name'],
             'time': f'{minutes}:{seconds}',
+            'short_time': only_minutes,
             'text': text,
             'status': status,
             'offset': int(round(abs(x['arrival_delay']) / 60, 0))

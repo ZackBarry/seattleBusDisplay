@@ -1,23 +1,31 @@
 #!/usr/bin/env python
+import time
+from datetime import datetime
+
 from samplebase import SampleBase
 from metro.data import Data
 from metro.context import download_context
-import time
 
 try:
     from rgbmatrix import graphics
 except ImportError:
     from RGBMatrixEmulator import graphics
 
+REFRESH_S = 30
+SWITCH_S = 5
+MS_PER_S = 1000
+COLOR = graphics.Color(255, 234, 0)
+
 
 class RunText(SampleBase):
     def __init__(self, *args, **kwargs):
         super(RunText, self).__init__(*args, **kwargs)
-        self.bus_names = [
-            ["31S", "32S"],
-            ["44W"],
-            ["44E", "31N", "32N"],
-        ]
+        self.dirs = ["Ba", "Fr", "UW"]
+        self.bus_names = {
+            "Ba": ["44W"],
+            "Fr": ["31S", "32S"],
+            "UW": ["44E", "31N", "32N"],
+        }
 
     def run(self):
         # download_context()
@@ -25,68 +33,78 @@ class RunText(SampleBase):
         offscreen_canvas = self.matrix.CreateFrameCanvas()
         font = graphics.Font()
         font.LoadFont("./assets/fonts/7x13.bdf")
-        COLOR = {
-            'delayed': graphics.Color(255, 234, 0),
-            'on-time': graphics.Color(255, 234, 0),
-            'ahead':   graphics.Color(255, 234, 0),
-        }
 
         time_passed_ms = 0
-        time_passed_s = 0
-        bus_index = 0
+        dir_index = 0
         data = Data()
         data.update_stop_statuses()
 
         while True:
             offscreen_canvas.Clear()
 
-            bus_names = self.bus_names[bus_index]
-            statuses = data.get_bus_statuses(bus_names)
+            if datetime.now().hour >= 23 or datetime.now().hour < 6:
+                time.sleep(300)
+                time_passed_ms =0
 
-            if len(statuses) == 0:
-                # skip this bus
-                bus_index += 1
-                bus_index %= len(self.bus_names)
-                until_next_update = 5000 - time_passed_ms % 5000
-                time_passed_ms += until_next_update
-                continue
+            if time_passed_ms % (REFRESH_S * MS_PER_S) == 0:
+                data.update_stop_statuses()
 
+            if (time_passed_ms % (SWITCH_S * MS_PER_S)) == 0:
+                dir_index += 1
+                dir_index %= len(self.dirs)
+                if 0 <= datetime.now().weekday() <= 4:
+                    if datetime.now().hour < 8:
+                        dir = "Fr"
+                        bus_names = ["31", "32"]
+                else:
+                    dir = self.dirs[dir_index]
+                    bus_names = self.bus_names[dir]
+                statuses = data.get_bus_statuses(bus_names)
+
+            short_dir = dir.strip()
+            dir_start = 1 if len(short_dir) == 2 else 5
+            graphics.DrawText(
+                offscreen_canvas, font, dir_start, 10, 
+                COLOR, short_dir
+            )
             for i in range(min(len(statuses), 3)):  
                 status = statuses[i]
-                route = status['route']
-                eta = status['time']
-                color = COLOR[status['status']]
-                route_width = sum([font.CharacterWidth(ord(letter)) for letter in route])
-                eta_width = sum([font.CharacterWidth(ord(letter)) for letter in eta])
+                route = status['route'][:2]
+                eta = status['short_time']
+                dir_width = sum([font.CharacterWidth(ord(letter)) for letter in dir])
                 led_width = 64
-                pos_route = max(0, (led_width - route_width) // 2 + 1)
-                pos_eta = pos_route + 5
+                pos_dir = max(0, (led_width - dir_width) // 2 + 1)
+                pos_desc = pos_dir - 2
+
                 graphics.DrawText(
-                    offscreen_canvas, font, 1, 10 + 10 * i, 
-                    color, route
+                    offscreen_canvas, font, pos_desc, 10 + 10 * i, 
+                    COLOR, route
                 )
+                offscreen_canvas.SetPixel(pos_desc + 17, 10 * i + 5, 255, 234, 0)
                 graphics.DrawText(
-                    offscreen_canvas, font, pos_eta, 10 + 10 * i, 
-                    color, eta
+                    offscreen_canvas, font, pos_desc + 22, 10 + 10 * i, 
+                    COLOR, eta
                 )
+
                 for j in range(min(status['offset'], 9)):
                     if status['status'] == 'delayed':
-                        offscreen_canvas.SetPixel(self.matrix.width - 1, 10 * i + 1 + j, 255, 0, 0)
+                        offscreen_canvas.SetPixel(self.matrix.width - 2, 10 * i + 1 + j, 255, 0, 0)
                     elif status['status'] == 'ahead':
-                        offscreen_canvas.SetPixel(self.matrix.width - 1, 10 * i + 1 + j, 0, 255, 0)
+                        offscreen_canvas.SetPixel(self.matrix.width - 2, 10 * i + 1 + j, 0, 255, 0)
+
+            sec_remaining = SWITCH_S - (time_passed_ms // MS_PER_S) % SWITCH_S - 1
+            for i in range(sec_remaining):
+                offscreen_canvas.SetPixel(1 + i, 12, 0, 0, 255)
+
+            # ms_remaining = time_passed_ms % (MS_PER_S * SWITCH_S)
+            # points_possible = 14
+            # MS_PER_POINT = (MS_PER_S * SWITCH_S) // 14
+            # points = 14 - ms_remaining // MS_PER_POINT
+            # for i in range(points - 1):
+            #     offscreen_canvas.SetPixel(1 + i, 12, 0, 0, 255)
 
             time.sleep(0.05)
             time_passed_ms += 50
-            time_passed_s = time_passed_ms // 1000
-
-            if time_passed_ms % 1000 == 0:
-                if (time_passed_s % 30) == 0:
-                    print(f'Updating, {time_passed_s}')
-                    data.update_stop_statuses()
-                    stop_index = 0
-                if (time_passed_s % 5) == 0:
-                    bus_index += 1
-                    bus_index %= len(self.bus_names)
 
             offscreen_canvas = self.matrix.SwapOnVSync(offscreen_canvas)
 
