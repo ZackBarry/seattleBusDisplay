@@ -110,7 +110,7 @@ class Data:
 
         formatted = [
             self.format_stop_status(x) for x in statuses
-            if int(x['arrival_epoch'] - datetime.now().timestamp()) > 0
+            if int(x['arrival_time'] - datetime.now().timestamp()) > 0
         ]
 
         self.stop_statuses = sorted(formatted, key=lambda x: x['arrival_time'])
