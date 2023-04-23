@@ -6,10 +6,10 @@ from metro.util import filter_table, table_to_dict
 
 A = [
     26400, # "N 40th St & Wallingford Ave N" (Westbound)
-    # 26965, # "N 40th St & Wallingford Ave N" (Eastbound)
+    26965, # "N 40th St & Wallingford Ave N" (Eastbound)
     17310, # "N 45th St & Wallingford Ave N" (Westbound)
-    # 17410, # "N 45th St & Wallingford Ave N" (Eastbound)
-    # 7360,  # "Stone Way N & N 40th St" (Southbound)
+    17410, # "N 45th St & Wallingford Ave N" (Eastbound)
+    7360,  # "Stone Way N & N 40th St" (Southbound)
 ]
 
 B = [
@@ -87,10 +87,12 @@ class Data:
 
         status['route_name'] = route['route_desc']
         status['route'] = route['route_short_name']
-        status['headsign'] = trip['trip_headsign']
+        status['headsign'] = trip['trip_headsign'].strip()
         status['stop_name'] = stop['stop_name']
         status['arrival_epoch'] = status['arrival_time']
         status['arrival_time'] = datetime.fromtimestamp(status['arrival_epoch']).strftime('%H-%M-%S')
+        status['direction'] = HEADSIGN_DIR[status['headsign']]
+        status['short_name'] = status['route'] + status['direction']
 
         return status
     
@@ -114,19 +116,45 @@ class Data:
         ]
 
         self.stop_statuses = sorted(formatted, key=lambda x: x['arrival_time'])
+
+    def render_stop_status_2(self, x):
+        """
+        text: 44N 04|05 status: late
+        4 minutes until arrival
+        5 minutes late
+        """
+        sec_to_arrival = int(x['arrival_epoch'] - datetime.now().timestamp())
     
-    def get_stop_status(self, index):
-        if index >= len(self.stop_statuses):
-            index = index % len(self.stop_statuses)
+        minutes = str(sec_to_arrival // 60)
+        if len(minutes) == 1:
+            minutes = '0' + minutes
+        elif len(minutes) > 2:
+            minutes = '99'
+
+        delay_minutes = str(int(round(abs(x['arrival_delay']) / 60, 0)))
+        if len(delay_minutes) == 1:
+            delay_minutes = '0' + delay_minutes
         
-        x = self.stop_statuses[index]
+        text = f"{x['short_name']} {minutes}|{delay_minutes}"
 
-        headsign = x['headsign'].strip()
-        if headsign in HEADSIGN_DIR:
-            dir = HEADSIGN_DIR[headsign]
+        if delay_minutes == '00':
+            status = 'on-time'
+        elif x['arrival_delay'] > 0:
+            status = 'delayed'
         else:
-            dir = ' '
+            status = 'ahead'
 
+        return {
+            'text': text,
+            'status': status,
+        }
+
+    def render_stop_status(self, x):
+        """
+        text: 44N 04:23 status: late
+        4:23 until arrival
+        behind schedule
+        """
         sec_to_arrival = int(x['arrival_epoch'] - datetime.now().timestamp())
 
         seconds = sec_to_arrival % 60
@@ -141,7 +169,7 @@ class Data:
         elif len(minutes) > 2:
             minutes = '99'
         
-        text = f"{x['route']}{dir} {minutes}:{seconds}"
+        text = f"{x['short_name']} {minutes}:{seconds}"
 
         if x['arrival_delay'] > 60:
             status = 'delayed'
@@ -154,3 +182,20 @@ class Data:
             'text': text,
             'status': status,
         }
+
+    def get_bus_statuses(self, bus_names):
+        statuses = filter_table(
+            table=self.stop_statuses,
+            col='short_name',
+            value=bus_names,
+            comparison='is_one_of'
+        )
+        return [self.render_stop_status(x) for x in statuses]
+
+    def get_stop_status(self, index):
+        if index >= len(self.stop_statuses):
+            index = index % len(self.stop_statuses)
+        
+        x = self.stop_statuses[index]
+
+        return self.render_stop_status(x)
