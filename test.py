@@ -21,15 +21,10 @@ class RunText(SampleBase):
         font = graphics.Font()
         font.LoadFont("./assets/fonts/7x13.bdf")
         COLOR = {
-            'delayed': graphics.Color(0, 0, 255),
-            'on-time': graphics.Color(0, 123, 123),
-            'ahead':   graphics.Color(0, 255, 0),
+            'delayed': graphics.Color(255, 87, 51),
+            'on-time': graphics.Color(255, 215, 0),
+            'ahead':   graphics.Color(80, 200, 120),
         }
-        # COLOR = {
-        #     'delayed': graphics.Color(255, 87, 51),
-        #     'on-time': graphics.Color(255, 215, 0),
-        #     'ahead':   graphics.Color(80, 200, 120),
-        # }
 
         time_passed_ms = 0
         time_passed_s = 0
