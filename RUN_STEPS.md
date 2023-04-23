@@ -43,6 +43,10 @@ BUS_ARGS="--led-gpio-mapping=adafruit-hat --led-cols=64 --led-rows=32 --led-slow
 source ~/.bashrc
 
 sudo python run.py $BUS_ARGS
+
+# to schedule it - https://www.makeuseof.com/what-is-systemd-launch-programs-raspberry-pi/
+sudo mv seattle-bus-display.service /lib/systemd/system/seattle-bus-display.service
+sudo systemctl enable seattle-bus-display.service
 ```
 
 
