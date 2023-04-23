@@ -42,7 +42,15 @@ class RunText(SampleBase):
 
             bus_names = self.bus_names[bus_index]
             statuses = data.get_bus_statuses(bus_names)
- 
+
+            if len(statuses) == 0:
+                # skip this bus
+                bus_index += 1
+                bus_index %= len(self.bus_names)
+                until_next_update = 5000 - time_passed_ms % 5000
+                time_passed_ms += until_next_update
+                continue
+
             for i in range(min(len(statuses), 3)):  
                 status = statuses[i]
                 route = status['route']
@@ -52,16 +60,16 @@ class RunText(SampleBase):
                 eta_width = sum([font.CharacterWidth(ord(letter)) for letter in eta])
                 led_width = 64
                 pos_route = max(0, (led_width - route_width) // 2 + 1)
-                pos_eta = pos_route + 4
+                pos_eta = pos_route + 5
                 graphics.DrawText(
-                    offscreen_canvas, font, 0, 10 + 10 * i, 
+                    offscreen_canvas, font, 1, 10 + 10 * i, 
                     color, route
                 )
                 graphics.DrawText(
                     offscreen_canvas, font, pos_eta, 10 + 10 * i, 
                     color, eta
                 )
-                for j in range(status['offset']):
+                for j in range(min(status['offset'], 10)):
                     if status['status'] == 'delayed':
                         offscreen_canvas.SetPixel(self.matrix.width - 1, 10 * i + 1 + j, 255, 0, 0)
                     elif status['status'] == 'ahead':
