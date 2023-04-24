@@ -52,10 +52,9 @@ class RunText(SampleBase):
             if (time_passed_ms % (SWITCH_S * MS_PER_S)) == 0:
                 dir_index += 1
                 dir_index %= len(self.dirs)
-                if 0 <= datetime.now().weekday() <= 4:
-                    if datetime.now().hour < 8:
+                if 0 <= datetime.now().weekday() <= 4 and datetime.now().hour < 8:
                         dir = "Fr"
-                        bus_names = ["31", "32"]
+                        bus_names = ["31S", "32S"]
                 else:
                     dir = self.dirs[dir_index]
                     bus_names = self.bus_names[dir]
