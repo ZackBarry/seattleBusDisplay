@@ -6,7 +6,7 @@ After=network.target network-online.target
 [Service]
 Environment="BUS_ARGS=--led-gpio-mapping=adafruit-hat --led-cols=64 --led-rows=32 --led-slowdown-gpio=4 --led-limit-refresh-hz=60 --led-brightness=65"
 WorkingDirectory=/home/zackbarry12/seattleBusDisplay
-ExecStart=/usr/bin/python run.py $BUS_ARGS
+ExecStart=git pull && /usr/bin/python run.py $BUS_ARGS
 Restart=always
 RestartSec=2
 
