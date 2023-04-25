@@ -20,7 +20,7 @@ COLOR = graphics.Color(255, 234, 0)
 class RunText(SampleBase):
     def __init__(self, *args, **kwargs):
         super(RunText, self).__init__(*args, **kwargs)
-        self.dirs = ["Ba", "UW"]
+        self.dirs = ["Ba", "Fr", "UW"]
         self.bus_names = {
             "Ba": ["44W"],
             "Fr": ["31S", "32S"],
