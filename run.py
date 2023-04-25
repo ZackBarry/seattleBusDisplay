@@ -44,7 +44,8 @@ class RunText(SampleBase):
 
             if datetime.now().hour >= 23 or datetime.now().hour < 6:
                 time.sleep(300)
-                time_passed_ms =0
+                time_passed_ms = 0
+                continue
 
             if time_passed_ms % (REFRESH_S * MS_PER_S) == 0:
                 data.update_stop_statuses()
